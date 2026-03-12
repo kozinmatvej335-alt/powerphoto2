@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+
+<meta charset="UTF-8">
+<title>POWERMOD</title>
+
+<style>
+
+body{
+background:black;
+color:white;
+font-family:Arial;
+text-align:center;
+margin:0;
+}
+
+.banner{
+font-size:60px;
+font-weight:bold;
+position:absolute;
+top:20px;
+width:100%;
+animation:move 6s linear infinite;
+white-space:nowrap;
+}
+
+@keyframes move{
+0%{transform:translateX(-100%)}
+100%{transform:translateX(100%)}
+}
+
+.container{
+margin-top:150px;
+}
+
+button{
+background:white;
+color:black;
+border:none;
+padding:12px 25px;
+font-size:16px;
+cursor:pointer;
+margin:10px;
+}
+
+button:hover{
+opacity:0.8;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="banner">POWERMOD</div>
+
+<div class="container">
+
+<h2>Конвертер в logopic.h</h2>
+
+<input type="file" id="upload">
+
+<br><br>
+
+<button onclick="convert()">Конвертировать</button>
+
+<br><br>
+
+<a id="download" style="display:none;">
+<button>Скачать logopic.h</button>
+</a>
+
+</div>
+
+<script>
+
+function convert(){
+
+let file = document.getElementById("upload").files[0];
+
+if(!file){
+alert("Выберите изображение");
+return;
+}
+
+let img = new Image();
+let reader = new FileReader();
+
+reader.onload = e => img.src = e.target.result;
+
+reader.readAsDataURL(file);
+
+img.onload = function(){
+
+let canvas = document.createElement("canvas");
+let ctx = canvas.getContext("2d");
+
+canvas.width = img.width;
+canvas.height = img.height;
+
+ctx.drawImage(img,0,0);
+
+let data = ctx.getImageData(0,0,canvas.width,canvas.height).data;
+
+let bytes = [];
+
+for(let i=0;i<data.length;i+=4){
+
+let r=data[i];
+let g=data[i+1];
+let b=data[i+2];
+
+let gray=(r+g+b)/3>127?1:0;
+
+bytes.push(gray);
+
+}
+
+let text="const unsigned char logopic[] = {\n";
+
+for(let i=0;i<bytes.length;i++){
+
+text+=bytes[i]+",";
+
+if(i%16===0) text+="\n";
+
+}
+
+text+="\n};";
+
+let blob=new Blob([text],{type:"text/plain"});
+
+let link=document.getElementById("download");
+
+link.href=URL.createObjectURL(blob);
+link.download="logopic.h";
+
+link.style.display="inline";
+
+}
+
+}
+
+</script>
+
+</body>
+</html>
